@@ -39,9 +39,8 @@ COPY --from=builder /install /usr/local
 # Copy application code
 COPY --chown=appuser:appgroup app/ ./app/
 
-# Copy entrypoint
-COPY docker-entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
+# Write entrypoint inline (avoids CRLF line-ending issues from Windows dev machines)
+RUN printf '#!/bin/sh\nset -e\nfor dir in /app/data /app/downloads /app/converted /app/uploads; do\n    mkdir -p "$dir"\n    chown appuser:appgroup "$dir"\ndone\nexec su-exec appuser uvicorn app.main:app --host 0.0.0.0 --port 8000 --proxy-headers\n' > /usr/local/bin/entrypoint.sh && chmod +x /usr/local/bin/entrypoint.sh
 
 # Volumes – created here as placeholders; actual ownership fixed by entrypoint
 RUN mkdir -p data downloads converted uploads
