@@ -105,8 +105,11 @@ docker compose up -d
 # Then open: http://localhost:8001
 ```
 
-On first launch, create your admin user via the registration page
-(if `ENABLE_REGISTRATION=true` is set), then disable registration from Settings.
+On first launch, register a new account. **The first registered user is automatically made an Admin.** 
+If you need to manually promote another user to admin via the command line, run:
+```bash
+docker exec -it grabster sqlite3 /app/data/app.db "UPDATE users SET role = 'admin' WHERE username = 'YOUR_USERNAME';"
+```
 
 ---
 
@@ -120,9 +123,9 @@ All configuration is done via environment variables in your `.env` file.
 | `PORT`          | No       | `8000`       | Host port to bind.                                           |
 | `DEBUG`         | No       | `false`      | Enables `/docs`, `/redoc`, verbose logging. **Off in prod.** |
 | `DB_PATH`       | No       | `data/app.db`| Path to SQLite database file.                                |
-| `DOWNLOAD_DIR`  | No       | `downloads`  | Directory for yt-dlp downloads.                              |
+| `DOWNLOAD_DIR`  | No       | `downloads`  | *Note: Managed internally via Settings UI (DB).*             |
 | `CONVERT_DIR`   | No       | `converted`  | Directory for FFmpeg output files.                           |
-| `COOKIE_SECURE` | No       | `true`       | Set to `false` for local HTTP-only development.              |
+| `COOKIE_SECURE` | No       | `false`      | Set to `true` if hosting behind an HTTPS TLS reverse proxy.  |
 
 ---
 
