@@ -367,10 +367,14 @@ async def register(user: UserCreate):
 
     user_id = str(uuid.uuid4())
     pw_hash = get_password_hash(user.password)
-    success = db.create_user({"id": user_id, "username": user.username, "password_hash": pw_hash})
+    
+    # The first registered user is automatically an admin
+    role = "admin" if len(db.get_all_users()) == 0 else "user"
+    
+    success = db.create_user({"id": user_id, "username": user.username, "password_hash": pw_hash, "role": role})
     if not success:
         raise HTTPException(status_code=500, detail="Failed to create user")
-    return {"status": "created", "username": user.username}
+    return {"status": "created", "username": user.username, "role": role}
 
 
 # ---------------------------------------------------------------------------
