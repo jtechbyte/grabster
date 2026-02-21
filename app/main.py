@@ -979,6 +979,16 @@ async def reset_user_password(user_id: str, reset: PasswordReset, current_user=D
 async def delete_user(user_id: str, current_user=Depends(get_current_admin)):
     if user_id == current_user["id"]:
         raise HTTPException(status_code=400, detail="Cannot delete your own account")
+        
+    all_users = db.get_all_users()
+    target = next((u for u in all_users if u["id"] == user_id), None)
+    
+    if not target:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    if target.get("role") == "admin":
+        raise HTTPException(status_code=400, detail="Cannot delete an admin account")
+        
     db.delete_user(user_id)
     return {"status": "deleted"}
 

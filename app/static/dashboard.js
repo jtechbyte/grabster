@@ -2895,6 +2895,17 @@ window.openEditUserModal = function (user) {
     editRoleInput.value = user.role || 'user';
     editStatusInput.value = String(user.is_active ?? 1);
     if (resetPasswordInput) resetPasswordInput.value = '';
+
+    // Protect admins from deletion in UI
+    const deleteBtn = document.getElementById('deleteUserBtn');
+    if (deleteBtn) {
+        if (user.role === 'admin') {
+            deleteBtn.style.display = 'none';
+        } else {
+            deleteBtn.style.display = 'block';
+        }
+    }
+
     openModal(editUserModal);
 };
 
