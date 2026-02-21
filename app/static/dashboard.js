@@ -522,60 +522,62 @@ function updateCard(data) {
     } else if (data.status === 'completed') {
         // --- SMOOTH TRANSITION START ---
 
-        // 1. Remove progress bar (fade out first?)
-        let overlay = card.querySelector('.card-progress-overlay');
-        if (overlay) {
-            overlay.style.opacity = '0';
-            setTimeout(() => overlay.remove(), 500);
-        }
-
-        // 2. Add 'video-card-completed' class
-        card.classList.add('video-card-completed');
-
-        // 3. Inject "Play" icon hint if missing
-        let thumbContainer = card.querySelector('.card-thumb-container');
-        if (thumbContainer && !thumbContainer.querySelector('.play-icon-hint')) {
-            thumbContainer.insertAdjacentHTML('beforeend',
-                `<div class="play-icon-hint entrance-anim"><span class="material-icons">play_circle</span></div>`
-            );
-            // Ensure onclick plays video
-            thumbContainer.setAttribute('onclick', "openPlayer(this.closest('.video-card')); event.stopPropagation();");
-
-            // Add hover preview data
-            if (!thumbContainer.querySelector('.video-preview-overlay')) {
-                thumbContainer.insertAdjacentHTML('beforeend', `<div class="video-preview-overlay" data-job-id="${data.job_id}"></div>`);
+        // Only run completion animation and DOM replacement ONCE
+        if (!card.classList.contains('video-card-completed')) {
+            // 1. Remove progress bar (fade out first?)
+            let overlay = card.querySelector('.card-progress-overlay');
+            if (overlay) {
+                overlay.style.opacity = '0';
+                setTimeout(() => overlay.remove(), 500);
             }
+
+            // 2. Add 'video-card-completed' class
+            card.classList.add('video-card-completed');
+
+            // 3. Inject "Play" icon hint if missing
+            let thumbContainer = card.querySelector('.card-thumb-container');
+            if (thumbContainer && !thumbContainer.querySelector('.play-icon-hint')) {
+                thumbContainer.insertAdjacentHTML('beforeend',
+                    `<div class="play-icon-hint entrance-anim"><span class="material-icons">play_circle</span></div>`
+                );
+                // Ensure onclick plays video
+                thumbContainer.setAttribute('onclick', "openPlayer(this.closest('.video-card')); event.stopPropagation();");
+
+                // Add hover preview data
+                if (!thumbContainer.querySelector('.video-preview-overlay')) {
+                    thumbContainer.insertAdjacentHTML('beforeend', `<div class="video-preview-overlay" data-job-id="${data.job_id}"></div>`);
+                }
+            }
+
+            // 4. Update Actions Footer completely
+            const footerActions = card.querySelector('.card-body-actions');
+            if (footerActions) {
+                // Check if in library (unlikely for a fresh download, but good to be safe)
+                const inLibrary = data.is_in_library;
+
+                // Re-render actions
+                footerActions.innerHTML = `
+                    <button class="btn-card-action danger" onclick="deleteVideo('${data.job_id}', '${currentPage.toLowerCase()}'); event.stopPropagation()" title="Remove"><span class="material-icons">delete</span></button>
+                    ${inLibrary ? `
+                    <button class="btn-card-action danger" onclick="deleteVideo('${data.job_id}', 'library'); event.stopPropagation()" title="Remove from Library"><span class="material-icons" style="color:var(--accent)">bookmark_remove</span></button>
+                    ` : `
+                    <button class="btn-card-action" onclick="window.moveToLibrary(['${data.job_id}']); event.stopPropagation()" title="Move to Library"><span class="material-icons">bookmark_add</span></button>
+                    `}
+                    <button class="btn-card-action" onclick="window.downloadVideoFile('${data.job_id}'); event.stopPropagation()" title="Download to Device"><span class="material-icons">download_for_offline</span></button>
+                `;
+
+                // Add flash effect to indicate completion
+                card.style.animation = 'none';
+                card.offsetHeight; /* trigger reflow */
+                card.style.animation = 'pulseGreen 1s ease';
+            }
+
+            // 5. Re-attach preview listeners (lightweight)
+            if (window.attachVideoPreviewListeners) window.attachVideoPreviewListeners();
+
+            // 6. Update Stats to empty or "Done"
+            if (metaDiv) metaDiv.innerHTML = '';
         }
-
-        // 4. Update Actions Footer completely
-        const footerActions = card.querySelector('.card-body-actions');
-        if (footerActions) {
-            // Check if in library (unlikely for a fresh download, but good to be safe)
-            const inLibrary = data.is_in_library;
-
-            // Re-render actions
-            // Re-render actions
-            footerActions.innerHTML = `
-                <button class="btn-card-action danger" onclick="deleteVideo('${data.job_id}', '${currentPage.toLowerCase()}'); event.stopPropagation()" title="Remove"><span class="material-icons">delete</span></button>
-                ${inLibrary ? `
-                <button class="btn-card-action danger" onclick="deleteVideo('${data.job_id}', 'library'); event.stopPropagation()" title="Remove from Library"><span class="material-icons" style="color:var(--accent)">bookmark_remove</span></button>
-                ` : `
-                <button class="btn-card-action" onclick="window.moveToLibrary(['${data.job_id}']); event.stopPropagation()" title="Move to Library"><span class="material-icons">bookmark_add</span></button>
-                `}
-                <button class="btn-card-action" onclick="window.downloadVideoFile('${data.job_id}'); event.stopPropagation()" title="Download to Device"><span class="material-icons">download_for_offline</span></button>
-            `;
-
-            // Add flash effect to indicate completion
-            card.style.animation = 'none';
-            card.offsetHeight; /* trigger reflow */
-            card.style.animation = 'pulseGreen 1s ease';
-        }
-
-        // 5. Re-attach preview listeners (lightweight)
-        if (window.attachVideoPreviewListeners) window.attachVideoPreviewListeners();
-
-        // 6. Update Stats to empty or "Done"
-        if (metaDiv) metaDiv.innerHTML = '';
 
         // --- SMOOTH TRANSITION END ---
 
