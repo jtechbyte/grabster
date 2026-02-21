@@ -124,14 +124,23 @@
                 registerForm.classList.add('hidden');
                 title.textContent = 'Login';
                 subtitle.textContent = 'Sign in to your account';
+                window.history.replaceState({}, '', '/login');
             } else {
                 // Show Register
                 loginForm.classList.add('hidden');
                 registerForm.classList.remove('hidden');
                 title.textContent = 'Register';
                 subtitle.textContent = 'Create your new account';
+                window.history.replaceState({}, '', '/register');
             }
         }
+
+        // Auto-show register mode if the URL is /register
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.location.pathname === '/register' && !document.getElementById('registerForm').classList.contains('hidden') === false) {
+                toggleMode();
+            }
+        });
 
         async function register() {
             const username = document.getElementById('regUsername').value;
