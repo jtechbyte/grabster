@@ -21,12 +21,13 @@ RUN pip install --prefix=/install --no-cache-dir -r requirements.txt
 # ---------------------------------------------------------------------------
 FROM python:3.11-slim AS runtime
 
-# Install ffmpeg (required for video conversion)
+# Install ffmpeg (required for video conversion) + su-exec for privilege drop
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
+    su-exec \
     && rm -rf /var/lib/apt/lists/*
 
-# Create non-root user
+# Create non-root user (entrypoint will drop to this user)
 RUN groupadd --gid 1000 appgroup && \
     useradd --uid 1000 --gid appgroup --no-create-home --shell /bin/false appuser
 
@@ -38,11 +39,12 @@ COPY --from=builder /install /usr/local
 # Copy application code
 COPY --chown=appuser:appgroup app/ ./app/
 
-# Create writable directories for persistent data
-RUN mkdir -p data downloads converted uploads && \
-    chown -R appuser:appgroup data downloads converted uploads
+# Copy entrypoint
+COPY docker-entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
-USER appuser
+# Volumes – created here as placeholders; actual ownership fixed by entrypoint
+RUN mkdir -p data downloads converted uploads
 
 EXPOSE 8000
 
@@ -53,4 +55,5 @@ ENV PYTHONDONTWRITEBYTECODE=1
 HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers"]
+# Entrypoint fixes volume permissions then drops to appuser
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
