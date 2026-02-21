@@ -83,12 +83,13 @@ async def add_security_headers(request: Request, call_next):
         response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
     response.headers["Content-Security-Policy"] = (
         "default-src 'self'; "
-        "script-src 'self' 'unsafe-inline'; "
-        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "script-src 'self' 'unsafe-inline' https://cdn.plyr.io https://cdn.jsdelivr.net; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.plyr.io; "
         "font-src 'self' https://fonts.gstatic.com; "
         "img-src 'self' data: https:; "
         "media-src 'self' blob:; "
-        "connect-src 'self' ws: wss:;"
+        "connect-src 'self' ws: wss:; "
+        "frame-src 'self' https://www.youtube.com https://youtube.com;"
     )
     return response
 

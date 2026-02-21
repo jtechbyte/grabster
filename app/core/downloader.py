@@ -265,8 +265,16 @@ class DownloadManager:
             # Keep best format per resolution
             formats = []
             for res_key, items in by_resolution.items():
-                # Sort by: 1) has audio (prefer True), 2) filesize (prefer larger)
-                best = sorted(items, key=lambda x: (x['has_audio'], x['size']), reverse=True)[0]
+                # Sort by: 1) H.264 codec (avc1) for maximum compatibility, 2) has audio, 3) filesize
+                best = sorted(
+                    items, 
+                    key=lambda x: (
+                        1 if x['format'].get('vcodec', '').startswith('avc') else 0,
+                        x['has_audio'], 
+                        x['size']
+                    ), 
+                    reverse=True
+                )[0]
                 f = best['format']
                 
                 size_str = f"{round(best['size']/(1024*1024),1)}MiB" if best['size'] else "Unknown"
@@ -570,7 +578,7 @@ class DownloadManager:
                     # If format_id is None or empty, default to best compatible
                     if not format_spec:
                           if 'youtube.com' in job.url or 'youtu.be' in job.url:
-                              format_spec = 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best'
+                              format_spec = 'bestvideo[vcodec^=avc1]+bestaudio[ext=m4a]/bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best'
                           else:
                               format_spec = 'best'
 
