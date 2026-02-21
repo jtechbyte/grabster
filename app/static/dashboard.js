@@ -562,7 +562,6 @@ function updateCard(data) {
                 ` : `
                 <button class="btn-card-action" onclick="window.moveToLibrary(['${data.job_id}']); event.stopPropagation()" title="Move to Library"><span class="material-icons">bookmark_add</span></button>
                 `}
-                <button class="btn-card-action" onclick="window.openJobFolder('${data.job_id}'); event.stopPropagation()" title="Open File"><span class="material-icons">folder</span></button>
             `;
 
             // Add flash effect to indicate completion
@@ -873,7 +872,6 @@ function renderQueue(jobs) {
                 `;
             }
             actionsHtml += `
-            <button class="btn-card-action" onclick="window.openJobFolder('${job.id}'); event.stopPropagation()" title="Open File"><span class="material-icons">folder</span></button>
             `;
         }
 
