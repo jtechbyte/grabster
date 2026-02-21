@@ -214,7 +214,7 @@ class DownloadManager:
                          'quiet': True,
                          'no_warnings': True,
                          'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                         'ffmpeg_location': os.path.join(os.getcwd(), 'bin')
+                         'ffmpeg_location': ydl_opts.get('ffmpeg_location')
                      }
                      print(f"[DEBUG] Fallback opts: {fallback_opts}")
                      
@@ -574,12 +574,17 @@ class DownloadManager:
                     info = None
                     download_success = False
 
+                    import shutil
+                    ffmpeg_path = os.path.join(os.getcwd(), 'bin', 'ffmpeg.exe')
+                    if not os.path.exists(ffmpeg_path):
+                        ffmpeg_path = shutil.which('ffmpeg')
+
                     # Base options common to all attempts
                     base_opts = {
                         'format': format_spec if format_spec else 'bestvideo+bestaudio/best',
                         'outtmpl': os.path.join(self.download_dir, '%(title)s.%(ext)s'),
                         'progress_hooks': [progress_hook],
-                        'ffmpeg_location': os.path.join(os.getcwd(), 'bin', 'ffmpeg.exe'),
+                        'ffmpeg_location': ffmpeg_path,
                         'quiet': False,
                         'no_warnings': False,
                         'merge_output_format': 'mp4',
