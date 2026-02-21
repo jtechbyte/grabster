@@ -562,6 +562,7 @@ function updateCard(data) {
                 ` : `
                 <button class="btn-card-action" onclick="window.moveToLibrary(['${data.job_id}']); event.stopPropagation()" title="Move to Library"><span class="material-icons">bookmark_add</span></button>
                 `}
+                <button class="btn-card-action" onclick="window.downloadVideoFile('${data.job_id}'); event.stopPropagation()" title="Download to Device"><span class="material-icons">download_for_offline</span></button>
             `;
 
             // Add flash effect to indicate completion
@@ -872,6 +873,7 @@ function renderQueue(jobs) {
                 `;
             }
             actionsHtml += `
+            <button class="btn-card-action" onclick="window.downloadVideoFile('${job.id}'); event.stopPropagation()" title="Download to Device"><span class="material-icons">download_for_offline</span></button>
             `;
         }
 
@@ -2646,6 +2648,17 @@ document.getElementById('ctxDownload')?.addEventListener('click', () => {
     }
     closeContextMenu();
 });
+
+// Trigger browser native download from `/api/download/{job_id}`
+window.downloadVideoFile = function (jobId) {
+    showToast("Starting download...", "info");
+    const a = document.createElement('a');
+    a.href = `/api/download/${jobId}`;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { document.body.removeChild(a); }, 100);
+};
 
 /**
  * Move items to library (Modal Version)

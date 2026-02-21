@@ -607,6 +607,31 @@ async def increment_video_view(job_id: str, request: Request):
     return response
 
 
+@app.get("/api/download/{job_id}")
+async def download_video_file(job_id: str):
+    from fastapi.responses import FileResponse
+    job_data = db.get_job(job_id)
+    if not job_data:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    file_path = job_data.get("filename")
+    if not file_path:
+        raise HTTPException(status_code=404, detail="File path not found in database")
+
+    # Resolve relative paths against the download directory
+    if not os.path.isabs(file_path):
+        file_path = os.path.join(manager.download_dir, file_path)
+
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="File not found on server")
+
+    filename = os.path.basename(file_path)
+    return FileResponse(
+        path=file_path,
+        filename=filename,
+        content_disposition_type="attachment"
+    )
+
 @app.get("/api/video/{job_id}/views")
 async def get_video_views(job_id: str):
     job_data = db.get_job(job_id)
