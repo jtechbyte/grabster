@@ -270,8 +270,15 @@ class DownloadManager:
                 f = best['format']
                 
                 size_str = f"{round(best['size']/(1024*1024),1)}MiB" if best['size'] else "Unknown"
+                
+                # CRITICAL INTERVENTION: If the best format for this resolution lacks audio (e.g. 1080p+ DASH streams),
+                # we MUST instruct yt-dlp to download the video track AND the best audio track and merge them.
+                final_format_id = f["format_id"]
+                if not best['has_audio']:
+                    final_format_id = f"{f['format_id']}+bestaudio/best"
+                
                 formats.append(Format(
-                    id=f["format_id"],
+                    id=final_format_id,
                     ext=f["ext"],
                     res=res_key,
                     size=size_str,
