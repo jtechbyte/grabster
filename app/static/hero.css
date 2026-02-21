@@ -1,0 +1,122 @@
+/* --- Hero Section --- */
+.hero-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 32px 20px 10px;
+    position: relative;
+    /* Optional: Slight background accent behind hero */
+}
+
+.hero-title {
+    font-size: 3rem;
+    font-weight: 800;
+    margin: 0 0 16px 0;
+    letter-spacing: -1px;
+    line-height: 1.1;
+    color: white;
+}
+
+.text-gradient {
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero-subtitle {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin: 0 0 24px 0;
+    max-width: 600px;
+}
+
+.hero-search.search-bar-container {
+    width: 100%;
+    max-width: 720px;
+    padding: 8px 16px 8px 24px;
+    height: 64px;
+    /* Taller touch target */
+    border-radius: 32px;
+    background: rgba(30, 30, 30, 0.8);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.hero-search.search-bar-container:focus-within {
+    box-shadow: 0 0 25px rgba(150, 196, 62, 0.25), inset 0 0 20px rgba(150, 196, 62, 0.05);
+    border-color: rgba(150, 196, 62, 0.6);
+    background: rgba(40, 40, 40, 0.95);
+    /* No movement - stays solid */
+}
+
+.hero-search .search-icon {
+    font-size: 24px;
+    margin-right: 12px;
+}
+
+.hero-search #urlInput {
+    font-size: 1.1rem;
+    padding: 0;
+}
+
+.hero-search .btn-fab-mini {
+    width: 48px;
+    height: 48px;
+    border-radius: 24px;
+    /* fully round */
+}
+
+.hero-badges {
+    display: flex;
+    gap: 16px;
+    margin-top: 24px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.badge-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    border: 1px solid transparent;
+    transition: all 0.3s;
+}
+
+.badge-pill:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.badge-pill .material-icons {
+    font-size: 18px;
+    color: var(--primary);
+}
+
+/* Mobile Adjustments for Hero */
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2.2rem;
+    }
+
+    .hero-section {
+        padding: 40px 16px 60px;
+    }
+
+    .hero-search.search-bar-container {
+        height: 56px;
+        padding-left: 16px;
+    }
+
+    .hero-search .btn-fab-mini {
+        width: 40px;
+        height: 40px;
+    }
+}

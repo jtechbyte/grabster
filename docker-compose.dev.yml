@@ -1,0 +1,21 @@
+# GrabSter – development overrides
+# Usage: docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+services:
+  grabster:
+    build:
+      context: .
+      target: runtime   # Skip builder cache for faster rebuilds in dev
+    environment:
+      - DEBUG=true
+      - COOKIE_SECURE=false
+    ports:
+      - "8001:8000"     # Different port to avoid conflicts with production
+    volumes:
+      # Mount source code for live reload
+      - ./app:/app/app
+    command: >
+      uvicorn app.main:app
+      --host 0.0.0.0
+      --port 8000
+      --reload
+      --reload-dir /app/app

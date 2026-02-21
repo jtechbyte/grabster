@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GrabSter</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Plyr Player -->
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+    <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
+    <!-- HLS.js -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/style.css?v=premium_save_v3">
+    <link rel="stylesheet" href="/static/badge_styles.css?v=2">
+    <link rel="stylesheet" href="/static/hero.css?v=2">
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script>
+        // Immediate Theme Check to prevent flash
+        (function () {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            if (savedTheme === 'light') {
+                document.documentElement.classList.add('light-theme');
+                document.addEventListener('DOMContentLoaded', () => {
+                    document.body.classList.add('light-theme');
+                });
+            }
+        })();
+    </script>
+</head>
+
+<body>
+    <div class="app-layout">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <img src="/static/img/logo-full.png" alt="GrabSter" class="app-logo">
+            </div>
+            <ul class="nav-links">
+                <li class="active"><a href="#" data-page="Home"><span class="material-icons">home</span> Home</a></li>
+                <li><a href="#" data-page="Downloads"><span class="material-icons">download</span> Downloads</a></li>
+                <li><a href="#" data-page="Library"><span class="material-icons">video_library</span> My Library</a>
+                </li>
+                <li><a href="#" data-page="Convert"><span class="material-icons">transform</span> Convert</a></li>
+                <li><a href="#" data-page="Settings"><span class="material-icons">settings</span> Settings</a></li>
+                <li><a href="#" data-page="System"><span class="material-icons">dns</span> System</a></li>
+                <li><a href="#" id="logoutBtn"><span class="material-icons">logout</span> Logout</a></li>
+            </ul>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+
+            <!-- Top App Bar -->
+            <header class="app-bar">
+                <div class="spacer" style="flex: 1;"></div>
+
+            </header>
+
+            <!-- Content Container -->
+            <div class="content-wrapper">
+
+                <!-- Hero Section -->
+                <section class="hero-section">
+                    <h1 class="hero-title">Download content from <span class="text-gradient">anywhere</span></h1>
+                    <p class="hero-subtitle">Paste your link below to get started</p>
+
+                    <div class="search-bar-container hero-search">
+                        <span class="material-icons search-icon">link</span>
+                        <input type="text" id="urlInput" placeholder="Paste video URL to download..."
+                            autocomplete="off">
+
+                        <button id="fetchBtn" class="btn-fab-mini">
+                            <span class="material-icons">arrow_forward</span>
+                        </button>
+                    </div>
+
+                    <div class="hero-badges">
+                        <span class="badge-pill"><span class="material-icons">4k</span> 4K Support</span>
+                        <span class="badge-pill"><span class="material-icons">audiotrack</span> MP3 Audio</span>
+                        <span class="badge-pill"><span class="material-icons">speed</span> Fast</span>
+                    </div>
+                </section>
+
+                <!-- My Library Section -->
+                <div id="librarySection" class="hidden">
+                    <div class="section-title">
+                        <h3>My Library</h3>
+                    </div>
+                    <div id="libraryGrid" class="cards-grid">
+                        <!-- Playable videos will appear here -->
+                    </div>
+                </div>
+
+                <!-- Active Download/Confirm Card -->
+                <div id="videoPreview" class="confirm-card hidden">
+                    <div class="confirm-card-content">
+                        <img id="thumbnail" src="" class="confirm-thumb">
+                        <div class="confirm-details">
+                            <h3 id="videoTitle">Video Title</h3>
+                            <div class="badges">
+                                <span id="videoDuration" class="badge">--:--</span>
+                            </div>
+                            <div class="confirm-actions">
+                                <select id="qualitySelect" class="material-select"></select>
+                                <button id="queueBtn" class="btn-contained primary">
+                                    <span class="material-icons">cloud_download</span> Download
+                                </button>
+                                <button id="cancelPreviewBtn" class="btn-text">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Convert Section -->
+                <div id="convertSection" class="hidden">
+                    <div class="section-title">
+                        <h3>Convert Video</h3>
+                    </div>
+
+                    <div class="convert-container glass-panel">
+                        <!-- Upload Zone -->
+                        <div id="uploadZone" class="upload-zone">
+                            <span class="material-icons upload-icon">cloud_upload</span>
+                            <p class="upload-text">Drag & Drop video here or click to browse</p>
+                            <input type="file" id="fileInput" hidden accept="video/*">
+                        </div>
+
+                        <!-- Selected File Info -->
+                        <div id="fileInfo" class="file-info hidden">
+                            <span class="material-icons">movie</span>
+                            <span id="fileName" class="file-name">video.mp4</span>
+                            <button id="removeFileBtn" class="btn-icon-small"><span
+                                    class="material-icons">close</span></button>
+                        </div>
+
+                        <!-- Controls -->
+                        <div class="convert-controls">
+                            <div class="control-group">
+                                <label>Target Format</label>
+                                <select id="convertFormat" class="material-select">
+                                    <option value="mp3">MP3 (Audio)</option>
+                                    <option value="mp4">MP4 (Video)</option>
+                                    <option value="gif">GIF (Animated)</option>
+                                    <option value="wav">WAV (Audio)</option>
+                                    <option value="avi">AVI (Video)</option>
+                                    <option value="webm">WEBM (Web Video)</option>
+                                    <option value="mkv">MKV (High Quality)</option>
+                                    <option value="flac">FLAC (Lossless Audio)</option>
+                                    <option value="ogg">OGG (Open Audio)</option>
+                                    <option value="mov">MOV (QuickTime)</option>
+                                </select>
+                            </div>
+
+                            <button id="startConvertBtn" class="btn-contained primary" disabled>
+                                <span class="material-icons">transform</span> Start Conversion
+                            </button>
+                        </div>
+
+                        <!-- Progress Area -->
+                        <div id="convertProgress" class="convert-progress hidden">
+                            <div class="progress-header">
+                                <span id="convertStatusText">Converting...</span>
+                                <span id="convertPercent">0%</span>
+                            </div>
+                            <div class="progress-track">
+                                <div id="convertProgressBar" class="progress-fill" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Result Area -->
+                        <div id="convertResult" class="convert-result hidden">
+                            <div class="success-icon"><span class="material-icons">check_circle</span></div>
+                            <p>Conversion Complete!</p>
+                            <a id="downloadResultBtn" href="#" class="btn-contained success" download>
+                                <span class="material-icons">download</span> Download File
+                            </a>
+                            <button id="convertNewBtn" class="btn-text">Convert Another</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Batch Download Modal -->
+
+
+
+
+                <!-- Dashboard Grid -->
+                <!-- We will show queue items here as cards instead of a list -->
+                <!-- Downloads Section -->
+                <div id="downloadsSection">
+                    <div class="section-title">
+                        <h3><span class="material-icons"
+                                style="font-size: 32px; color: var(--primary); vertical-align: middle; margin-right: 8px;">download_for_offline</span>
+                            Active Downloads</h3>
+                    </div>
+
+                    <!-- Queue Grid -->
+                    <div id="dashboardToolbar" class="modern-toolbar-pill">
+                        <div class="search-input-wrapper">
+                            <span class="material-icons search-icon">search</span>
+                            <input type="text" id="dashboardSearch" placeholder="Search history...">
+                        </div>
+
+                        <div class="filter-chips">
+                            <button class="chip active" data-filter="all">All</button>
+                            <button class="chip" data-filter="downloading">Downloading</button>
+                            <button class="chip" data-filter="completed">Completed</button>
+                        </div>
+
+                        <div class="toolbar-actions">
+                            <select id="dashboardSort" class="material-select compact pill-select">
+                                <option value="newest">Newest First</option>
+                                <option value="oldest">Oldest First</option>
+                            </select>
+                            <button id="toolbarClearBtn" class="btn-icon-pill" title="Clear Completed/Failed">
+                                <span class="material-icons">delete_sweep</span>
+                                <span>Clear</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="queueGrid" class="cards-grid">
+                        <div class="empty-placeholder">
+                            <span class="material-icons large-icon">cloud_download</span>
+                            <p>No downloads yet.</p>
+                            <small>Paste a URL above to get started.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+
+            <!-- Settings Section -->
+            <div id="settingsSection" class="hidden premium-container">
+
+
+                <div class="dashboard-grid">
+
+                    <!-- Left Column: General -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <div class="card-icon icon-premium-blue"><span class="material-icons">tune</span></div>
+                            <div>
+                                <h3>General</h3>
+                                <p class="card-description">Basic Preferences</p>
+                            </div>
+                        </div>
+                        <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin: 0 0 20px 0;">
+
+                        <div class="setting-item">
+                            <label>Download Location</label>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <input type="text" id="settingDownloadDir" class="setting-input"
+                                    placeholder="e.g. C:\Downloads" style="flex: 1;">
+                                <button id="browseDirBtn" class="btn-input-action" style="flex-shrink: 0;">
+                                    <span class="material-icons">folder_open</span> Browse
+                                </button>
+                            </div>
+                            <small>Folder where files will be saved (server-side path).</small>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <div class="setting-item">
+                                <label>Default Format</label>
+                                <select id="settingDefaultFormat" class="material-select setting-input">
+                                    <option value="best">Best Quality (Video+Audio)</option>
+                                    <option value="worst">Worst Quality</option>
+                                    <option value="audio_only">Audio Only</option>
+                                </select>
+                                <small>Select download quality.</small>
+                            </div>
+
+                            <div class="setting-item">
+                                <label>Theme</label>
+                                <select id="settingTheme" class="material-select setting-input">
+                                    <option value="dark">Dark (Default)</option>
+                                    <option value="light">Light</option>
+                                </select>
+                                <small>Toggle application theme.</small>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: center;">
+                            <div class="setting-item"
+                                style="flex-direction: row; align-items: center; justify-content: space-between; margin-bottom: 0;">
+                                <label style="margin-bottom:0; font-size: 0.75rem;">Auto-start Downloads</label>
+                                <label class="switch" style="transform: scale(0.8); margin-right: -4px;">
+                                    <input type="checkbox" id="settingAutoStart">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+
+                            <div class="setting-item" id="containerEnableRegistration"
+                                style="flex-direction: row; align-items: center; justify-content: space-between; margin-bottom: 0;">
+                                <label style="margin-bottom:0; font-size: 0.75rem;">Self-Registration</label>
+                                <label class="switch" style="transform: scale(0.8); margin-right: -4px;">
+                                    <input type="checkbox" id="settingEnableRegistration">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+
+                            <div class="setting-item"
+                                style="flex-direction: row; align-items: center; justify-content: space-between; margin-bottom: 0;">
+                                <label style="margin-bottom:0; font-size: 0.75rem;">Show System Logs</label>
+                                <label class="switch" style="transform: scale(0.8); margin-right: -4px;">
+                                    <input type="checkbox" id="settingShowSystemLogs" checked>
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                        </div>
+
+
+
+
+                    </div>
+
+                    <!-- Right Column: Advanced -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <div class="card-icon icon-premium-orange">
+                                <span class="material-icons">settings_applications</span>
+                            </div>
+                            <div>
+                                <h3>Advanced</h3>
+                                <p class="card-description">System Configuration</p>
+                            </div>
+                            <button id="saveSettingsBtn" class="btn-premium-save">
+                                <span class="material-icons" style="font-size: 16px;">backup</span>
+                                Save
+                            </button>
+
+                        </div>
+                        <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin: 0 0 20px 0;">
+
+
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <div class="setting-item">
+                                <label>Cookies File Path</label>
+                                <input type="text" id="settingCookiesPath" class="setting-input"
+                                    placeholder="/path/to/cookies.txt">
+                                <small>Required for premium content.</small>
+                            </div>
+
+                            <div class="setting-item">
+                                <label>Browser Cookies</label>
+                                <input type="text" id="settingCookiesBrowser" class="setting-input"
+                                    placeholder="e.g. chrome, firefox">
+                                <small>Extract from browser.</small>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <div class="setting-item">
+                                <label>Custom Arguments</label>
+                                <input type="text" id="settingCustomArgs" class="setting-input"
+                                    placeholder="e.g. --write-sub">
+                                <small>Extra yt-dlp arguments.</small>
+                            </div>
+
+                            <div class="setting-item">
+                                <label>Filename Template</label>
+                                <input type="text" id="settingFilenameTemplate" class="setting-input"
+                                    placeholder="%(title)s.%(ext)s">
+                                <small>Vars: %(title)s, %(id)s...</small>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <div class="setting-item">
+                                <label>Max Concurrent</label>
+                                <input type="number" id="settingMaxConcurrent" class="setting-input" min="1" max="10"
+                                    placeholder="3">
+                            </div>
+
+                            <div class="setting-item">
+                                <label>Max Retries</label>
+                                <input type="number" id="settingMaxRetries" class="setting-input" min="0" max="10"
+                                    placeholder="3">
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Section -->
+            <div id="systemSection" class="hidden premium-container" style="height: 100%; overflow: hidden;">
+                <!-- Control Panel Wrapper -->
+                <div class="control-panel">
+
+                    <!-- Neon Tabs -->
+                    <div class="system-tabs-container">
+                        <button class="sys-tab active" data-tab="dashboard">
+                            <span class="material-icons">dashboard</span> Dashboard
+                        </button>
+                        <button class="sys-tab" data-tab="users">
+                            <span class="material-icons">group</span> Users
+                        </button>
+                        <button class="sys-tab" data-tab="profile">
+                            <span class="material-icons">account_circle</span> Profile
+                        </button>
+                    </div>
+
+                    <!-- DASHBOARD VIEW (Compact Settings Style) -->
+                    <div id="sysDashboardView"
+                        style="height: 100%; overflow-y: hidden; padding-bottom: 40px; scrollbar-width: none;">
+
+                        <div class="dashboard-grid">
+                            <!-- Left Column: System Status -->
+                            <div class="dashboard-card">
+                                <div class="card-header" style="border-bottom: 1px solid var(--border);">
+                                    <div class="card-icon icon-premium-purple"><span class="material-icons">dns</span>
+                                    </div>
+                                    <div>
+                                        <h3 style="font-weight: 600; letter-spacing: -0.02em;">System Status</h3>
+                                        <p class="card-description">Network & Core Engine</p>
+                                    </div>
+                                </div>
+                                <div style="padding: 20px;">
+                                    <!-- Connectivity Status Badge -->
+                                    <div class="status-display-row"
+                                        style="border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 12px;">
+                                        <div class="status-label">
+                                            <span class="material-icons"
+                                                style="font-size: 16px; color: var(--text-secondary);">wifi</span>
+                                            <span style="color: var(--text-primary);">Connectivity</span>
+                                        </div>
+                                        <div class="status-badge status-online">
+                                            <div class="status-pulse"></div>
+                                            <span>ONLINE</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Version Display -->
+                                    <div id="updateStatusContainer" class="status-display-row"
+                                        style="border-bottom: none; padding-bottom: 0;">
+                                        <div class="status-label">
+                                            <span class="material-icons"
+                                                style="font-size: 16px; color: var(--text-secondary);">update</span>
+                                            <span style="color: var(--text-primary);">Core Engine</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <div class="version-display">v2025.01</div>
+                                            <button class="btn-icon-glass" style="width: 32px; height: 32px;">
+                                                <span class="material-icons spin" style="font-size: 16px;">sync</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right Column: Maintenance -->
+                            <div class="dashboard-card">
+                                <div class="card-header" style="border-bottom: 1px solid var(--border);">
+                                    <div class="card-icon icon-premium-red"><span class="material-icons">build</span>
+                                    </div>
+                                    <div>
+                                        <h3 style="font-weight: 600; letter-spacing: -0.02em;">Maintenance</h3>
+                                        <p class="card-description">Database Operations</p>
+                                    </div>
+                                </div>
+                                <div style="padding: 20px;">
+                                    <!-- Download History Cleanup -->
+                                    <div class="status-display-row"
+                                        style="border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 12px;">
+                                        <div class="status-label">
+                                            <span class="material-icons"
+                                                style="font-size: 16px; color: var(--text-secondary);">delete_sweep</span>
+                                            <span style="color: var(--text-primary);">Download History</span>
+                                        </div>
+                                        <button id="clearCompletedBtn" class="btn-action-danger">
+                                            <span class="material-icons"
+                                                style="font-size: 16px;">cleaning_services</span>
+                                            <span>Prune</span>
+                                        </button>
+                                    </div>
+
+                                    <!-- Failed Downloads Cleanup -->
+                                    <div class="status-display-row" style="border-bottom: none; padding-bottom: 0;">
+                                        <div class="status-label">
+                                            <span class="material-icons"
+                                                style="font-size: 16px; color: var(--text-secondary);">error_outline</span>
+                                            <span style="color: var(--text-primary);">Failed Downloads</span>
+                                        </div>
+                                        <button id="clearFailedBtn" class="btn-action-danger">
+                                            <span class="material-icons" style="font-size: 16px;">delete_forever</span>
+                                            <span>Prune</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <!-- Full Width: System Logs -->
+                        <div id="systemLogsCard" class="dashboard-card"
+                            style="margin-top: 16px; max-width: 1000px; margin-left: auto; margin-right: auto;">
+                            <div class="card-header">
+                                <div class="card-icon icon-premium-blue"><span class="material-icons">terminal</span>
+                                </div>
+                                <div>
+                                    <h3>System Logs</h3>
+                                    <p class="card-description">Live Console Output</p>
+                                </div>
+                                <div style="margin-left:auto; display:flex; gap:12px; align-items:center;">
+                                    <label
+                                        style="font-size:0.75rem; color:var(--text-secondary); display:flex; align-items:center; cursor:pointer;">
+                                        <input type="checkbox" id="autoRefreshLogs" style="margin-right:6px;">
+                                        Auto-scroll
+                                    </label>
+                                    <button id="refreshLogsBtn" class="btn-icon-glass" style="width:32px; height:32px;">
+                                        <span class="material-icons" style="font-size:18px;">refresh</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <!-- Terminal Body reused but without border since card has it -->
+                            <div id="logsContainer" class="terminal-body"
+                                style="height: 300px; background: rgba(0,0,0,0.2);">
+                                <div class="log-entry"><span class="log-info">[INFO]</span> System dashboard
+                                    initialized...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. USERS VIEW (Premium Table) -->
+                    <div id="sysUsersView" class="hidden" style="height: 100%; overflow-y: auto; padding-bottom: 40px;">
+                        <div
+                            style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                            <h3 style="margin:0;">User Management</h3>
+                            <button id="createUserBtn" class="btn-contained primary">
+                                <span class="material-icons">person_add</span> Add User
+                            </button>
+                        </div>
+
+                        <div class="premium-table-wrapper">
+                            <table class="glass-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 60px;"></th> <!-- Avatar -->
+                                        <th>Username</th>
+                                        <th>Role</th>
+                                        <th>Status</th>
+                                        <th style="text-align:right;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="usersTableBody">
+                                    <!-- Injected Rows -->
+                                </tbody>
+                            </table>
+                            <div id="usersLoading" class="empty-placeholder hidden" style="padding:40px;">
+                                <span class="material-icons spin">sync</span>
+                                <p>Loading users...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. PROFILE VIEW -->
+                    <div id="sysProfileView" class="hidden" style="height: 100%; overflow-y: auto;">
+                        <div class="profile-hero">
+                            <div id="profileAvatar" class="profile-avatar-xl">U</div>
+                            <h2 id="profileUsername" class="profile-name">Username</h2>
+                            <span id="profileRole" class="profile-role-badge">Admin</span>
+                            <div style="margin-top:16px; font-family:monospace; opacity:0.6;" id="profileUserId">ID: ...
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+    </div>
+    </div>
+    </div>
+
+    <!-- Queue Grid Moved Up -->
+
+    </div>
+    </main>
+    </div>
+
+    <!-- Directory Browser Modal -->
+    <!-- Directory Browser Modal -->
+    <!-- Directory Browser Modal -->
+    <div id="dirBrowserModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header-premium">
+                <h3><span class="material-icons" style="color: #60a5fa;">folder_open</span> Select Folder</h3>
+                <button id="closeDirBrowserBtn" class="btn-icon">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+
+            <!-- Breadcrumb -->
+            <div id="dirBreadcrumb"></div>
+
+            <!-- Drives (Windows) -->
+            <div id="dirDrives"></div>
+
+            <!-- List -->
+            <div id="dirList"></div>
+
+            <!-- Footer -->
+            <div class="modal-actions-premium">
+                <button id="cancelDirBtn" class="btn-text" style="color: #9ca3af;">Cancel</button>
+                <button id="selectDirBtn" class="btn-contained primary">
+                    <span class="material-icons" style="font-size: 18px; margin-right: 6px;">check</span>
+                    Select Current
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Create User Modal -->
+    <div id="createUserModal" class="modal hidden">
+        <div class="modal-content"
+            style="max-width: 340px; padding: 24px; border-radius: 16px; box-shadow: 0 24px 64px rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.08); background: rgba(20,20,20,0.95);">
+            <div class="modal-header-premium"
+                style="margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 16px;">
+                <h3 style="font-size: 1.15rem; display: flex; align-items: center; gap: 8px;"><span
+                        class="material-icons" style="color: #60a5fa; font-size: 20px;">person_add</span> Create User
+                </h3>
+                <button id="closeCreateUserBtn" class="btn-icon" style="opacity: 0.6; transform: scale(0.9);"><span
+                        class="material-icons">close</span></button>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 14px;">
+                <div class="setting-item" style="gap: 4px; margin-bottom: 0;">
+                    <label
+                        style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;">Username</label>
+                    <input type="text" id="newUsername" class="setting-input" placeholder="Username"
+                        style="height: 38px; border-radius: 8px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); font-size: 0.9rem;">
+                </div>
+                <div class="setting-item" style="gap: 4px; margin-bottom: 0;">
+                    <label
+                        style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;">Password</label>
+                    <input type="password" id="newPassword" class="setting-input" placeholder="Password"
+                        style="height: 38px; border-radius: 8px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); font-size: 0.9rem;">
+                </div>
+                <div class="setting-item" style="gap: 4px; margin-bottom: 0;">
+                    <label
+                        style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;">Role</label>
+                    <select id="newRole" class="material-select setting-input"
+                        style="height: 38px; border-radius: 8px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); font-size: 0.9rem;">
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <div class="modal-actions-premium"
+                    style="margin-top: 12px; display: flex; justify-content: flex-end; gap: 8px;">
+                    <button id="cancelCreateUserBtn" class="btn-text"
+                        style="font-size: 0.85rem; height: 36px; padding: 0 16px; border-radius: 8px;">Cancel</button>
+                    <button id="confirmCreateUserBtn" class="btn-premium-save"
+                        style="font-size: 0.85rem; height: 36px; padding: 0 20px; border-radius: 8px;">Create</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Move to Library Modal -->
+    <div id="moveLibraryModal" class="modal hidden">
+        <div class="modal-content"
+            style="max-width: 340px; padding: 24px; border-radius: 16px; box-shadow: 0 24px 64px rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.08); background: rgba(20,20,20,0.95); text-align: center;">
+            <div class="modal-header-premium centered"
+                style="margin-bottom: 8px; border-bottom: none; padding-bottom: 0;">
+                <div class="icon-box-glass"
+                    style="width: 56px; height: 56px; border-radius: 50%; background: rgba(96, 165, 250, 0.1); border: 1px solid rgba(96, 165, 250, 0.2); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto;">
+                    <span class="material-icons" style="color: #60a5fa; font-size: 28px;">bookmark_add</span>
+                </div>
+                <h3 style="font-size: 1.15rem; font-weight: 600; margin-bottom: 4px;">Move to Library</h3>
+            </div>
+            <div style="padding: 0 8px;">
+                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 24px; line-height: 1.5;">
+                    Move <strong id="moveLibraryCount" style="color: var(--text-primary); font-weight: 600;">1
+                        item</strong> to your
+                    library?
+                </p>
+                <div class="modal-actions-premium" style="justify-content: center; gap: 12px; display: flex;">
+                    <button id="cancelMoveBtn" class="btn-text"
+                        style="font-size: 0.85rem; height: 38px; padding: 0 20px; border-radius: 8px; flex: 1;">Cancel</button>
+                    <button id="confirmMoveBtn" class="btn-premium-save"
+                        style="font-size: 0.85rem; height: 38px; border-radius: 8px; padding: 0 20px; flex: 1;">
+                        Move Items
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div id="editUserModal" class="modal hidden">
+        <div class="modal-content"
+            style="max-width: 340px; padding: 24px; border-radius: 16px; box-shadow: 0 24px 64px rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.08); background: rgba(20,20,20,0.95);">
+            <div class="modal-header-premium"
+                style="margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 16px;">
+                <h3 style="font-size: 1.15rem; display: flex; align-items: center; gap: 8px;"><span
+                        class="material-icons" style="color: #60a5fa; font-size: 20px;">manage_accounts</span> Edit User
+                </h3>
+                <button id="closeEditUserBtn" class="btn-icon" style="opacity: 0.6; transform: scale(0.9);"><span
+                        class="material-icons">close</span></button>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 14px;">
+                <input type="hidden" id="editUserId">
+                <div class="setting-item" style="gap: 4px; margin-bottom: 0;">
+                    <label
+                        style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;">Role</label>
+                    <select id="editRole" class="material-select setting-input"
+                        style="height: 38px; border-radius: 8px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); font-size: 0.9rem;">
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <div class="setting-item" style="gap: 4px; margin-bottom: 0;">
+                    <label
+                        style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;">Account
+                        Status</label>
+                    <select id="editStatus" class="material-select setting-input"
+                        style="height: 38px; border-radius: 8px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); font-size: 0.9rem;">
+                        <option value="1">Active</option>
+                        <option value="0">Disabled</option>
+                    </select>
+                </div>
+                <hr style="border:0; border-top:1px solid rgba(255,255,255,0.05); margin: 8px 0;">
+                <div class="setting-item" style="gap: 4px; margin-bottom: 0;">
+                    <label
+                        style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;">Reset
+                        Password <span
+                            style="opacity: 0.6; font-size: 0.65rem; font-weight: normal;">(Optional)</span></label>
+                    <input type="password" id="resetPassword" class="setting-input" placeholder="New Password"
+                        style="height: 38px; border-radius: 8px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); font-size: 0.9rem;">
+                    <small style="color: var(--text-tertiary); font-size: 0.7rem; margin-top: 2px;">Leave blank to keep
+                        current
+                        password.</small>
+                </div>
+                <div class="modal-actions-premium"
+                    style="justify-content: space-between; margin-top: 12px; align-items: center;">
+                    <button id="deleteUserBtn" class="btn-text"
+                        style="color: #ef4444; font-size: 0.85rem; padding: 0 8px; height: 36px;"
+                        onclick="handleDeleteUser()">Delete</button>
+                    <div style="display:flex; gap:8px;">
+                        <button id="cancelEditUserBtn" class="btn-text"
+                            style="font-size: 0.85rem; height: 36px; padding: 0 16px; border-radius: 8px;">Cancel</button>
+                        <button id="confirmEditUserBtn" class="btn-premium-save"
+                            style="font-size: 0.85rem; height: 36px; border-radius: 8px; padding: 0 20px;">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Action Bar (Premium Glass Pill) -->
+    <div id="bulkActionBar" class="bulk-action-bar">
+        <div class="selection-info">
+            <span id="selectionCount">0</span> items selected
+        </div>
+        <div class="bulk-actions">
+            <button id="btnBulkMove" class="btn-bulk primary">
+                <span class="material-icons">move_to_inbox</span>
+                MOVE TO LIBRARY
+            </button>
+            <button id="btnBulkDelete" class="btn-bulk danger">
+                <span class="material-icons">delete</span>
+                DELETE
+            </button>
+            <button id="btnBulkCancel" class="btn-bulk-text">
+                CANCEL
+            </button>
+        </div>
+    </div>
+
+    <!-- Video Player Modal (Main Website) -->
+    <div id="videoModal" class="modal hidden">
+        <div class="modal-content" style="max-width: 900px; width: 90%; background: transparent; padding: 0;">
+            <div class="video-player-wrapper">
+                <video id="mainPlayer" playsinline controls></video>
+            </div>
+            <div class="modal-header"
+                style="padding: 16px; display: flex; justify-content: space-between; align-items: center; background: rgba(42, 42, 42, 0.95); border-radius: 0 0 16px 16px;">
+                <h3 id="playerTitle" style="margin: 0; color: white;">Video Title</h3>
+                <button id="closePlayerBtn" class="btn-icon"><span class="material-icons">close</span></button>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Context Menu -->
+    <div id="contextMenu" class="context-menu hidden">
+        <button class="menu-item" id="ctxDownload"><span class="material-icons">cloud_download</span> Download
+            Now</button>
+        <button class="menu-item" id="ctxMove"><span class="material-icons">move_to_inbox</span> Move to
+            Library</button>
+        <button class="menu-item" id="ctxOpen"><span class="material-icons">folder</span> Open Folder</button>
+        <hr class="menu-divider">
+        <button class="menu-item danger" id="ctxDelete"><span class="material-icons">delete</span> Delete</button>
+    </div>
+    <script src="/static/dashboard.js?v=premium_fix_v17" defer></script>
+    <script src="/static/dir_browser.js?v=4"></script>
+</body>
+
+</html>

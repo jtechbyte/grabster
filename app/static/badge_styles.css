@@ -1,0 +1,42 @@
+/* Status Badges */
+.status-badge {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: white;
+    background-color: #666;
+    /* default */
+}
+
+.status-badge.status-queued {
+    background-color: #2196f3;
+    /* Blue */
+}
+
+.status-badge.status-downloading {
+    background-color: var(--accent);
+    /* Green */
+}
+
+.status-badge.status-completed {
+    background-color: #4caf50;
+    /* Green */
+}
+
+.status-badge.status-error {
+    background-color: #f44336;
+    /* Red */
+}
+
+.status-badge.status-canceled {
+    background-color: #ff9800;
+    /* Orange */
+}
+
+.meta-eta {
+    margin-left: 8px;
+    color: var(--primary);
+    font-weight: 600;
+}

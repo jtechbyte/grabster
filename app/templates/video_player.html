@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player - GrabSter</title>
+
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="/static/style.css">
+    <!-- Plyr CSS -->
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+
+    <style>
+        /* Plyr Theme Overrides */
+        :root {
+            --plyr-color-main: var(--primary);
+            --plyr-video-control-color: var(--text-primary);
+            --plyr-video-control-background-hover: var(--bg-hover);
+            --plyr-range-track-height: 6px;
+            --plyr-range-thumb-height: 16px;
+            --plyr-range-thumb-width: 16px;
+            --plyr-range-thumb-background: var(--text-primary);
+            --plyr-range-track-background: rgba(255, 255, 255, 0.1);
+            --plyr-menu-background: var(--bg-card);
+            --plyr-menu-color: var(--text-primary);
+            --plyr-menu-border: 1px solid var(--border);
+            --plyr-menu-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            --plyr-menu-radius: 12px;
+        }
+
+        body {
+            overflow-y: auto;
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .player-page-layout {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background: radial-gradient(circle at 50% -20%, rgba(0, 97, 167, 0.15), transparent 70%);
+            background-color: var(--bg-body);
+        }
+
+        /* Header */
+        .player-header {
+            height: 72px;
+            display: flex;
+            align-items: center;
+            padding: 0 32px;
+            background: transparent;
+            width: 100%;
+            z-index: 10;
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 99px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            transition: all 0.2s ease;
+            backdrop-filter: blur(8px);
+        }
+
+        .back-btn:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+            border-color: var(--border-highlight);
+            transform: translateX(-2px);
+        }
+
+        /* Video Stage */
+        .video-stage {
+            width: 100%;
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+        }
+
+        .video-container {
+            width: 100%;
+            max-width: 1280px;
+            aspect-ratio: 16/9;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border);
+            background: #000;
+        }
+
+        /* Plyr overrides */
+        .plyr {
+            height: 100%;
+            border-radius: 16px;
+        }
+
+        .plyr--video {
+            height: 100%;
+        }
+
+        .plyr--full-ui input[type=range] {
+            color: var(--primary);
+        }
+
+        .plyr__control--overlaid {
+            background: var(--primary);
+        }
+
+        .plyr__control--overlaid:hover {
+            background: var(--primary-hover);
+        }
+
+        /* Modern Action Buttons */
+        .video-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 0 20px;
+            height: 42px;
+            /* Slightly more compact height */
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            /* More subtle border */
+            border-radius: 99px;
+            /* Pill shape */
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            backdrop-filter: blur(12px);
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            /* Subtle depth */
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.1);
+        }
+
+        .action-btn.active {
+            background: rgba(0, 97, 167, 0.2);
+            /* Primary tint */
+            border-color: var(--primary);
+            color: var(--primary);
+            box-shadow: 0 0 15px rgba(0, 97, 167, 0.3);
+        }
+
+        .action-btn .material-icons {
+            font-size: 20px;
+        }
+
+        .action-btn label {
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        /* Metadata Section */
+        .metadata-section {
+            max-width: 1280px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 0 32px 64px 32px;
+            /* Bottom padding for scroll */
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 48px;
+            flex-wrap: wrap;
+        }
+
+        .video-info {
+            flex: 1;
+            min-width: 300px;
+            max-width: 700px;
+        }
+
+        .video-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            line-height: 1.3;
+            background: linear-gradient(to right, #fff, #ccc);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .video-stats {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 24px;
+            justify-content: flex-start;
+            /* Ensure left align */
+        }
+
+        .view-count {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .video-description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            font-size: 15px;
+            /* Removed huge pill style */
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .metadata-section {
+                flex-direction: column;
+                gap: 32px;
+            }
+
+            .video-actions {
+                width: 100%;
+                justify-content: flex-start;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .player-header {
+                height: 60px;
+                padding: 0 20px;
+            }
+
+            .video-stage {
+                padding: 10px;
+            }
+
+            .metadata-section {
+                padding: 20px;
+            }
+
+            .action-btn {
+                flex: 1;
+                justify-content: center;
+            }
+        }
+
+        /* Dialog Styles (Modernized) */
+        .dialog-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        .dialog-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .dialog-card {
+            background: var(--bg-card);
+            /* Fallback */
+            background: linear-gradient(135deg, rgba(30, 30, 30, 0.9), rgba(20, 20, 20, 0.95));
+            width: 100%;
+            max-width: 480px;
+            border-radius: 24px;
+            border: 1px solid var(--border-highlight);
+            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            transform: scale(1);
+            transition: transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+        }
+
+        .dialog-overlay.hidden .dialog-card {
+            transform: scale(0.95);
+        }
+
+        .dialog-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dialog-header h3 {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .dialog-header button {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .dialog-header button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-color: var(--border-highlight);
+        }
+
+        .dialog-content {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .dialog-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .dialog-row:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .dialog-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* =====================================================
+           LIGHT THEME OVERRIDES
+           ===================================================== */
+        .light-theme body {
+            background-color: var(--bg-body);
+        }
+
+        .light-theme .player-page-layout {
+            background: radial-gradient(circle at 50% -20%, rgba(0, 97, 167, 0.07), transparent 70%);
+            background-color: var(--bg-body);
+        }
+
+        /* Back button — visible on light bg */
+        .light-theme .back-btn {
+            background: rgba(0, 0, 0, 0.04);
+            border-color: rgba(0, 0, 0, 0.10);
+            color: var(--text-secondary);
+        }
+
+        .light-theme .back-btn:hover {
+            background: rgba(0, 0, 0, 0.08);
+            color: var(--text-primary);
+        }
+
+        /* Video title — dark text instead of white gradient */
+        .light-theme .video-title {
+            background: none;
+            -webkit-background-clip: unset;
+            background-clip: unset;
+            -webkit-text-fill-color: var(--text-primary);
+            color: var(--text-primary);
+        }
+
+        /* Action buttons (Autoplay, Loop, Info, Download) */
+        .light-theme .action-btn {
+            background: rgba(0, 0, 0, 0.04);
+            border-color: rgba(0, 0, 0, 0.10);
+            color: var(--text-secondary);
+        }
+
+        .light-theme .action-btn:hover {
+            background: rgba(0, 0, 0, 0.08);
+            color: var(--text-primary);
+            border-color: rgba(0, 0, 0, 0.18);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .light-theme .action-btn.active {
+            background: rgba(0, 97, 167, 0.10);
+            border-color: var(--primary);
+            color: var(--primary);
+            box-shadow: 0 0 12px rgba(0, 97, 167, 0.15);
+        }
+
+        /* Info dialog card */
+        .light-theme .dialog-card {
+            background: #ffffff;
+            border-color: rgba(0, 0, 0, 0.09);
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.12);
+        }
+
+        .light-theme .dialog-header button {
+            background: rgba(0, 0, 0, 0.04);
+            color: var(--text-secondary);
+        }
+
+        .light-theme .dialog-header button:hover {
+            background: rgba(0, 0, 0, 0.08);
+            color: var(--text-primary);
+            border-color: rgba(0, 0, 0, 0.12);
+        }
+
+        .light-theme .dialog-row {
+            border-bottom-color: rgba(0, 0, 0, 0.06);
+        }
+    </style>
+
+</head>
+
+<body class="{{ 'light-theme' if request.cookies.get('theme') == 'light' else '' }}">
+    <div class="player-page-layout">
+        <!-- Header -->
+        <header class="player-header">
+            <a href="/" class="back-btn"><span class="material-icons">arrow_back</span>Back to Dashboard</a>
+        </header>
+
+        <!-- Video Stage -->
+        <div class="video-stage">
+            <div class="video-container video-wrapper" data-video-id="{{ job.id }}">
+                {% if job.filename %}
+                <video id="player" class="video-player" playsinline controls>
+                    <source src="/api/stream/{{ job.id }}" type="video/mp4" />
+                </video>
+                {% else %}
+                <div class="plyr__video-embed" id="player">
+                    <iframe
+                        src="{{ job.url.replace('watch?v=', 'embed/') }}?origin=https://plyr.io&amp;iv_load_policy=3&amp;modestbranding=1&amp;playsinline=1&amp;showinfo=0&amp;rel=0&amp;enablejsapi=1"
+                        allowfullscreen allowtransparency allow="autoplay"></iframe>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Metadata & Actions -->
+        <div class="metadata-section">
+            <div class="video-info">
+                <h1 class="video-title">{{ job.title }}</h1>
+                <!-- Removed inline styles that caused stacking -->
+                <div class="video-stats">
+                    <span id="viewCount" class="view-count">{{ "{:,}".format(job.view_count or 0) }} views</span>
+
+                    {% if job.duration %}
+                    <span>•</span>
+                    <span>{{ job.duration }}</span>
+                    {% endif %}
+
+                    {% if job.upload_date %}
+                    <span>•</span>
+                    <span>{{ job.upload_date }}</span>
+                    {% endif %}
+                </div>
+                <p class="video-description">
+                    {{ job.description or "No description available." }}
+                </p>
+            </div>
+
+            <div class="video-actions" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                <!-- Autoplay Toggle -->
+                <button class="action-btn" id="autoplayBtn" onclick="toggleAutoplay()">
+                    <span class="material-icons">play_circle_outline</span>
+                    <label>Autoplay</label>
+                </button>
+                <!-- Loop Toggle -->
+                <button class="action-btn" id="loopBtn" onclick="toggleLoop()">
+                    <span class="material-icons">repeat</span>
+                    <label>Loop</label>
+                </button>
+                <!-- Info (Restored) -->
+                <button class="action-btn" onclick="openInfoDialog()">
+                    <span class="material-icons">info</span>
+                    <label>Info</label>
+                </button>
+                <!-- Download -->
+                <a href="/api/stream/{{ job.id }}" download="{{ job.filename }}" class="action-btn"
+                    style="text-decoration: none;">
+                    <span class="material-icons">download</span>
+                    <label>Download</label>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Dialog (Restored) -->
+    <div id="infoDialog" class="dialog-overlay hidden">
+        <div class="dialog-card">
+            <div class="dialog-header">
+                <h3 style="margin:0;">Video Information</h3>
+                <button onclick="closeInfoDialog()"><span class="material-icons">close</span></button>
+            </div>
+            <div class="dialog-content">
+                <div class="dialog-row">
+                    <span class="dialog-label">Title</span>
+                    <span>{{ job.title }}</span>
+                </div>
+                {% if job.view_count %}
+                <div class="dialog-row">
+                    <span class="dialog-label">Views</span>
+                    <span>{{ "{:,}".format(job.view_count) }}</span>
+                </div>
+                {% endif %}
+                {% if job.format_id %}
+                <div class="dialog-row">
+                    <span class="dialog-label">Format</span>
+                    <span>{{ job.format_id }}</span>
+                </div>
+                {% endif %}
+                {% if job.duration %}
+                <div class="dialog-row">
+                    <span class="dialog-label">Duration</span>
+                    <span>{{ job.duration }}</span>
+                </div>
+                {% endif %}
+                {% if job.url %}
+                <div class="dialog-row">
+                    <span class="dialog-label">Source</span>
+                    <a href="{{ job.url }}" target="_blank" style="color: var(--primary); text-decoration:none;">Open
+                        Original</a>
+                </div>
+                {% endif %}
+                <div class="dialog-row">
+                    <span class="dialog-label">Filename</span>
+                    <span style="word-break: break-all;">{{ job.filename }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
+    <script>
+        window.VIDEO_CONFIG = {
+            jobId: "{{ job.id }}",
+            filename: "{{ job.filename | safe }}",
+            url: "{{ job.url | safe }}"
+        };
+    </script>
+    <script src="/static/player.js"></script>
+</body>
+
+</html>

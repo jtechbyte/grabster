@@ -1,0 +1,54 @@
+# === Python ===
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.venv/
+venv/
+env/
+
+# === Database ===
+*.db
+*.sqlite3
+
+# === Environment / Secrets ===
+.env
+.env.local
+.env.production
+*.secret
+
+# === Uploaded & Downloaded Files ===
+uploads/
+converted/
+downloads/
+my_downloads/
+my-library/
+yt-dlp/
+bin/
+data/
+
+# === Temporary / OS files ===
+*.DS_Store
+Thumbs.db
+*.tmp
+
+# === Test Video Files ===
+*.mp4
+*.mkv
+*.avi
+*.mov
+*.webm
+*.mp3
+
+# === IDE / OS ===
+.vscode/
+.idea/
+
+# === Docker ===
+.dockerignore

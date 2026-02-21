@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - GrabSter</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        /* Minimal override for background to match dashboard body */
+        body {
+            background-color: var(--bg-body);
+            background-image:
+                radial-gradient(circle at 10% 20%, rgba(0, 97, 167, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(150, 196, 62, 0.08) 0%, transparent 40%);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+    <script>
+        // Immediate Theme Check to prevent flash
+        (function () {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            if (savedTheme === 'light') {
+                document.documentElement.classList.add('light-theme');
+                document.addEventListener('DOMContentLoaded', () => {
+                    document.body.classList.add('light-theme');
+                });
+            }
+        })();
+    </script>
+</head>
+
+<body>
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            <img src="/static/Login-Logo.png" alt="GrabSter Logo" class="auth-logo">
+            <h1 class="auth-title">Login</h1>
+            <p class="auth-subtitle">Sign in to your account</p>
+
+            <div id="errorMessage" class="auth-error">
+                <span class="material-icons" style="font-size: 18px;">error</span>
+                <span id="errorText">Invalid credentials</span>
+            </div>
+
+            <form id="loginForm" onsubmit="event.preventDefault(); login();">
+                <div class="auth-form-group">
+                    <label class="auth-label" for="username">Username</label>
+                    <div class="auth-input-wrapper">
+                        <input type="text" id="username" name="username" class="auth-input" required autofocus>
+                    </div>
+                </div>
+
+                <div class="auth-form-group">
+                    <label class="auth-label" for="password">Password</label>
+                    <div class="auth-input-wrapper">
+                        <input type="password" id="password" name="password" class="auth-input" required>
+                    </div>
+                </div>
+
+                <button type="submit" id="loginBtn" class="btn-auth">
+                    <span id="btnText">Sign In</span>
+                </button>
+
+                {% if enable_registration %}
+                <div style="margin-top: 16px; text-align: center;">
+                    <button type="button" class="btn-text" onclick="toggleMode()" style="font-size: 0.9rem;">Create an
+                        Account</button>
+                </div>
+                {% endif %}
+            </form>
+
+            <!-- Registration Form (Hidden by default) -->
+            {% if enable_registration %}
+            <form id="registerForm" class="hidden" onsubmit="event.preventDefault(); register();">
+                <div class="auth-form-group">
+                    <label class="auth-label" for="regUsername">Username</label>
+                    <div class="auth-input-wrapper">
+                        <input type="text" id="regUsername" name="username" class="auth-input" required>
+                    </div>
+                </div>
+
+                <div class="auth-form-group">
+                    <label class="auth-label" for="regPassword">Password</label>
+                    <div class="auth-input-wrapper">
+                        <input type="password" id="regPassword" name="password" class="auth-input" required>
+                    </div>
+                </div>
+
+                <button type="submit" id="regBtn" class="btn-auth">
+                    <span id="regBtnText">Create Account</span>
+                </button>
+
+                <div style="margin-top: 16px; text-align: center;">
+                    <button type="button" class="btn-text" onclick="toggleMode()" style="font-size: 0.9rem;">Back to
+                        Login</button>
+                </div>
+            </form>
+            {% endif %}
+
+            <div class="auth-footer">
+                <p style="opacity: 0.6;">GrabSter v0.1.0</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleMode() {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const title = document.querySelector('.auth-title');
+            const subtitle = document.querySelector('.auth-subtitle');
+            const errorMsg = document.getElementById('errorMessage');
+
+            errorMsg.style.display = 'none';
+
+            if (loginForm.classList.contains('hidden')) {
+                // Show Login
+                loginForm.classList.remove('hidden');
+                registerForm.classList.add('hidden');
+                title.textContent = 'Login';
+                subtitle.textContent = 'Sign in to your account';
+            } else {
+                // Show Register
+                loginForm.classList.add('hidden');
+                registerForm.classList.remove('hidden');
+                title.textContent = 'Register';
+                subtitle.textContent = 'Create your new account';
+            }
+        }
+
+        async function register() {
+            const username = document.getElementById('regUsername').value;
+            const password = document.getElementById('regPassword').value;
+            const errorMsg = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+            const btn = document.getElementById('regBtn');
+            const btnText = document.getElementById('regBtnText');
+
+            if (!username || !password) return;
+
+            btn.disabled = true;
+            btnText.textContent = 'Creating...';
+            errorMsg.style.display = 'none';
+
+            try {
+                const response = await fetch('/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (response.ok) {
+                    // Success, switch to login and show message
+                    toggleMode();
+                    document.getElementById('username').value = username;
+                    document.getElementById('password').focus();
+
+                    // Show success styling momentarily (hacky but simple)
+                    errorText.textContent = 'Account created! Please log in.';
+                    errorMsg.style.display = 'flex';
+                    errorMsg.querySelector('.material-icons').textContent = 'check_circle';
+                    errorMsg.style.color = 'var(--success)';
+                } else {
+                    const data = await response.json();
+                    errorText.textContent = data.detail || 'Registration failed';
+                    errorMsg.style.display = 'flex';
+                    // Reset error style
+                    errorMsg.querySelector('.material-icons').textContent = 'error';
+                    errorMsg.style.color = 'var(--error)';
+                }
+            } catch (error) {
+                errorText.textContent = 'Connection error';
+                errorMsg.style.display = 'flex';
+            } finally {
+                btn.disabled = false;
+                btnText.textContent = "Create Account";
+            }
+        }
+
+        async function login() {
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            const errorMsg = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+            const loginBtn = document.getElementById('loginBtn');
+            const btnText = document.getElementById('btnText');
+
+            const username = usernameInput.value;
+            const password = passwordInput.value;
+
+            if (!username || !password) return;
+
+            loginBtn.disabled = true;
+            btnText.textContent = 'Signing in...';
+            errorMsg.style.display = 'none';
+            // Reset error style
+            errorMsg.querySelector('.material-icons').textContent = 'error';
+            errorMsg.style.color = 'var(--error)';
+
+            const formData = new URLSearchParams();
+            formData.append('username', username);
+            formData.append('password', password);
+
+            try {
+                const response = await fetch('/token', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    window.location.href = '/';
+                } else {
+                    const data = await response.json();
+                    errorText.textContent = data.detail || 'Invalid credentials';
+                    errorMsg.style.display = 'flex';
+                    loginBtn.disabled = false;
+                    btnText.textContent = "Sign In";
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                errorText.textContent = 'Connection error.';
+                errorMsg.style.display = 'flex';
+                loginBtn.disabled = false;
+                btnText.textContent = "Sign In";
+            }
+        }
+    </script>
+</body>
+
+</html>
