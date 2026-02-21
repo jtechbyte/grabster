@@ -49,7 +49,7 @@ logger = logging.getLogger("app.main")
 # Environment configuration
 # ---------------------------------------------------------------------------
 DEBUG = os.environ.get("DEBUG", "false").lower() == "true"
-COOKIE_SECURE = os.environ.get("COOKIE_SECURE", "true").lower() == "true"
+COOKIE_SECURE = os.environ.get("COOKIE_SECURE", "false").lower() == "true"
 
 UPLOAD_DIR = Path(os.environ.get("UPLOAD_DIR", "uploads"))
 CONVERT_DIR = Path(os.environ.get("CONVERT_DIR", "converted"))
