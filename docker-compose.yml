@@ -1,6 +1,6 @@
 services:
   grabster:
-    image: jctechmin/grabster:latest
+    image: ghcr.io/jtechbyte/grabster:latest
     container_name: grabster
     restart: unless-stopped
     env_file: .env
