@@ -19,6 +19,18 @@
 
 ---
 
+## Screenshots
+
+| Login | Dashboard |
+|-------|-----------|
+| ![Login page](docs/screenshots/login.png) | ![Dashboard](docs/screenshots/dashboard.png) |
+
+| Video Fetcher | My Library |
+|--------------|------------|
+| ![Video fetcher](docs/screenshots/fetcher.png) | ![Library](docs/screenshots/library.png) |
+
+---
+
 ## Tech Stack
 
 | Layer       | Technology               |
