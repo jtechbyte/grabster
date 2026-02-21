@@ -238,9 +238,9 @@ class DownloadManager:
             all_formats = []
             
             for f in info.get("formats", []):
-                # Show ALL formats with video, but skip webm to avoid duplicates
-                # Prefer mp4 for better compatibility
-                if f.get("vcodec") != "none" and f.get("ext") != "webm":
+                # Show ALL formats with video. We no longer skip webm, because
+                # YouTube only provides 1440p and 4K in VP9/AV1 formats (often webm).
+                if f.get("vcodec") != "none":
                     height = f.get("height")
                     if not height:
                         continue
