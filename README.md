@@ -102,7 +102,7 @@ openssl rand -hex 32
 # 3. Start GrabSter
 docker compose up -d
 
-# Then open: http://localhost:8000
+# Then open: http://localhost:8001
 ```
 
 On first launch, create your admin user via the registration page
