@@ -2583,12 +2583,35 @@ function showContextMenu(x, y) {
 
     // Conditionally show/hide 'Move to Library' based on current view
     const ctxMoveBtn = document.getElementById('ctxMove');
+    const ctxDownloadBtn = document.getElementById('ctxDownload');
+    const ctxDeviceBtn = document.getElementById('ctxDevice');
+
+    // Check target status
+    let isCompleted = false;
+    let isDetected = false;
+    if (ctxTargetId) {
+        const card = document.querySelector(`.video-card[data-id="${ctxTargetId}"]`);
+        if (card) {
+            const status = card.dataset.status;
+            isCompleted = (status === 'completed');
+            isDetected = (status === 'detected' || status === 'error');
+        }
+    }
+
     if (ctxMoveBtn) {
-        if (currentPage === 'Library') {
+        if (currentPage === 'Library' || !isCompleted) {
             ctxMoveBtn.style.display = 'none';
         } else {
             ctxMoveBtn.style.display = 'flex';
         }
+    }
+
+    if (ctxDownloadBtn) {
+        ctxDownloadBtn.style.display = isDetected ? 'flex' : 'none';
+    }
+
+    if (ctxDeviceBtn) {
+        ctxDeviceBtn.style.display = isCompleted ? 'flex' : 'none';
     }
 
     // Adjust position to prevent overflow
@@ -2647,6 +2670,13 @@ document.getElementById('ctxDownload')?.addEventListener('click', () => {
     // Only makes sense for single item or naive loop
     if (ctxTargetId) {
         window.startDownload(ctxTargetId);
+    }
+    closeContextMenu();
+});
+
+document.getElementById('ctxDevice')?.addEventListener('click', () => {
+    if (ctxTargetId) {
+        window.downloadVideoFile(ctxTargetId);
     }
     closeContextMenu();
 });
