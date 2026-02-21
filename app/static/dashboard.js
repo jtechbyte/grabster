@@ -2649,39 +2649,6 @@ document.getElementById('ctxDownload')?.addEventListener('click', () => {
     closeContextMenu();
 });
 
-document.getElementById('ctxOpen')?.addEventListener('click', () => {
-    if (ctxTargetId) {
-        window.openFolder(ctxTargetId);
-    }
-    closeContextMenu();
-});
-
-window.openFolder = async function (jobId) {
-    try {
-        const res = await fetch(`/api/open-folder`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ job_id: jobId })
-        });
-        if (res.ok) {
-            showToast("Server folder opened", "success");
-        } else {
-            const err = await res.json();
-            showToast(err.detail || "Failed to open folder", "error");
-        }
-    } catch (e) {
-        console.error("Open Folder Error:", e);
-        showToast("Error opening folder", "error");
-    }
-};
-
-document.getElementById('ctxOpen')?.addEventListener('click', () => {
-    if (ctxTargetId) {
-        window.openJobFolder(ctxTargetId);
-    }
-    closeContextMenu();
-});
-
 /**
  * Move items to library (Modal Version)
  * @param {Array<string>} jobIds
