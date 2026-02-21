@@ -35,7 +35,7 @@ class ConfigManager:
             show_system_logs=db.get_setting("show_system_logs", "true").lower() == "true",
             max_concurrent_downloads=int(db.get_setting("max_concurrent_downloads", "3")),
             max_retries=int(db.get_setting("max_retries", "3")),
-            enable_registration=db.get_setting("enable_registration", "false").lower() == "true",
+            enable_registration=db.get_setting("enable_registration", "true").lower() == "true",
         )
 
     @staticmethod
