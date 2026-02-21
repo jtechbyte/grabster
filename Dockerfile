@@ -21,10 +21,10 @@ RUN pip install --prefix=/install --no-cache-dir -r requirements.txt
 # ---------------------------------------------------------------------------
 FROM python:3.11-slim AS runtime
 
-# Install ffmpeg (required for video conversion) + su-exec for privilege drop
+# Install ffmpeg (required for video conversion) + gosu for privilege drop
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
-    su-exec \
+    gosu \
     && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user (entrypoint will drop to this user)
@@ -40,7 +40,7 @@ COPY --from=builder /install /usr/local
 COPY --chown=appuser:appgroup app/ ./app/
 
 # Write entrypoint inline (avoids CRLF line-ending issues from Windows dev machines)
-RUN printf '#!/bin/sh\nset -e\nfor dir in /app/data /app/downloads /app/converted /app/uploads; do\n    mkdir -p "$dir"\n    chown appuser:appgroup "$dir"\ndone\nexec su-exec appuser uvicorn app.main:app --host 0.0.0.0 --port 8000 --proxy-headers\n' > /usr/local/bin/entrypoint.sh && chmod +x /usr/local/bin/entrypoint.sh
+RUN printf '#!/bin/sh\nset -e\nfor dir in /app/data /app/downloads /app/converted /app/uploads; do\n    mkdir -p "$dir"\n    chown appuser:appgroup "$dir"\ndone\nexec gosu appuser uvicorn app.main:app --host 0.0.0.0 --port 8000 --proxy-headers\n' > /usr/local/bin/entrypoint.sh && chmod +x /usr/local/bin/entrypoint.sh
 
 # Volumes – created here as placeholders; actual ownership fixed by entrypoint
 RUN mkdir -p data downloads converted uploads
