@@ -258,6 +258,7 @@ async def read_root(request: Request):
 
 
 @app.get("/login", response_class=HTMLResponse)
+@app.get("/register", response_class=HTMLResponse)
 async def login_page(request: Request):
     return templates.TemplateResponse(
         "login.html",
