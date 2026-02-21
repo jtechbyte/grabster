@@ -1918,8 +1918,8 @@ function openPlayer(card) {
     console.log('[PLAYER DEBUG] openPlayer called with card:', card);
     const jobId = card.dataset.id;
 
-    // Navigate to the full player page
-    window.location.href = `/player/${jobId}`;
+    // Navigate to the full player page, forcing it to play immediately since the user explicitly clicked the video
+    window.location.href = `/player/${jobId}?autoplay=1`;
 }
 
 // --- Subscription Logic ---

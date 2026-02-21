@@ -53,6 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
         tooltips: {
             controls: true, seek: true
         },
+        autoplay: savedAutoplay,
         volume: initialVolume,
         loop: { active: savedLoop }
     });
@@ -130,7 +131,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function attemptResume() {
         // Apply Autoplay if configured (and not yet resumed/played)
-        if (!resumed && savedAutoplay && player.paused) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const forceAutoplay = urlParams.get('autoplay') === '1';
+
+        if (!resumed && (savedAutoplay || forceAutoplay) && player.paused) {
             player.play().catch(() => console.log('Autoplay blocked by browser'));
         }
 
@@ -154,66 +158,59 @@ document.addEventListener('DOMContentLoaded', () => {
     player.on('loadedmetadata', attemptResume);
 
     // === View Tracking Logic (User Provided) ===
-    document.querySelectorAll('.video-wrapper').forEach(wrapper => {
-        const video = wrapper.querySelector('.video-player');
-        const viewCountEl = document.getElementById('viewCount');
-        let viewCounted = false;
+    let viewCounted = false;
+    let activeInterval = null;
 
-        if (!video) return; // Guard against iframe/embed mode where video tag might be different
+    player.on('playing', () => {
+        if (viewCounted) return;
 
-        let activeInterval = null; // Track the active interval
+        // Clear any existing interval to prevent duplicates (debounce)
+        if (activeInterval) clearInterval(activeInterval);
 
-        video.addEventListener('play', () => {
-            if (viewCounted) return;
+        let playedSeconds = 0;
+        activeInterval = setInterval(() => {
+            if (viewCounted) {
+                clearInterval(activeInterval);
+                return;
+            }
 
-            // Clear any existing interval to prevent duplicates (debounce)
-            if (activeInterval) clearInterval(activeInterval);
-
-            let playedSeconds = 0;
-            activeInterval = setInterval(() => {
-                if (viewCounted) {
+            if (!player.paused && !player.ended) {
+                playedSeconds++;
+                // console.log('[VIEW TRACKING] Watched:', playedSeconds);
+                if (playedSeconds >= 5) {
                     clearInterval(activeInterval);
-                    return;
-                }
+                    if (viewCounted) return; // Double check
 
-                if (!video.paused && !video.ended) {
-                    playedSeconds++;
-                    // console.log('[VIEW TRACKING] Watched:', playedSeconds);
-                    if (playedSeconds >= 5) {
-                        clearInterval(activeInterval);
-                        if (viewCounted) return; // Double check
+                    const videoId = window.VIDEO_CONFIG.jobId;
+                    console.log('[VIEW TRACKING] 5s threshold reached for:', videoId);
 
-                        const videoId = wrapper.dataset.videoId;
-                        console.log('[VIEW TRACKING] 5s threshold reached for:', videoId);
-
-                        // Increment view on backend
-                        fetch(`/api/video/${videoId}/view`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' }
+                    // Increment view on backend
+                    fetch(`/api/video/${videoId}/view`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    })
+                        .then(res => res.json())
+                        .then(data => {
+                            const viewCountEl = document.getElementById('viewCount');
+                            if (viewCountEl && data.views !== undefined) {
+                                viewCountEl.textContent = new Intl.NumberFormat().format(data.views) + " views";
+                            } else {
+                                console.warn('[VIEW TRACKING] Missing data.views in response or element unavailable');
+                            }
                         })
-                            .then(res => res.json())
-                            .then(data => {
-                                if (viewCountEl && data.views !== undefined) {
-                                    // const oldText = viewCountEl.textContent; 
-                                    viewCountEl.textContent = new Intl.NumberFormat().format(data.views) + " views";
-                                } else {
-                                    console.warn('[VIEW TRACKING] Missing data.views in response or element unavailable');
-                                }
-                            })
-                            .catch(err => {
-                                console.error('[VIEW TRACKING] Fetch error:', err);
-                            });
+                        .catch(err => {
+                            console.error('[VIEW TRACKING] Fetch error:', err);
+                        });
 
-                        viewCounted = true;
-                    }
+                    viewCounted = true;
                 }
-            }, 1000);
-        });
+            }
+        }, 1000);
+    });
 
-        // Clear interval on pause to be safe
-        video.addEventListener('pause', () => {
-            if (activeInterval) clearInterval(activeInterval);
-        });
+    // Clear interval on pause to be safe
+    player.on('pause', () => {
+        if (activeInterval) clearInterval(activeInterval);
     });
 
 
