@@ -1,9 +1,6 @@
 services:
   grabster:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: grabster:latest
+    image: jctechmin/grabster:latest
     container_name: grabster
     restart: unless-stopped
     env_file: .env
