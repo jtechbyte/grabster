@@ -246,8 +246,23 @@ class DownloadManager:
                     if not height or not width:
                         continue
                     
-                    effective_res = min(height, width)
-                    res_key = f"{effective_res}p"
+                    long_edge = max(height, width)
+                    if long_edge >= 3840:
+                        res_key = "2160p"
+                    elif long_edge >= 2560:
+                        res_key = "1440p"
+                    elif long_edge >= 1920:
+                        res_key = "1080p"
+                    elif long_edge >= 1280:
+                        res_key = "720p"
+                    elif long_edge >= 854:
+                        res_key = "480p"
+                    elif long_edge >= 640:
+                        res_key = "360p"
+                    elif long_edge >= 426:
+                        res_key = "240p"
+                    else:
+                        res_key = "144p"
                     size = f.get("filesize") or f.get("filesize_approx") or 0
                     has_audio = f.get("acodec") != "none"
                     
