@@ -3890,6 +3890,92 @@ body.light-theme {
     color: var(--text-primary) !important;
 }
 
+/* =========================================
+   24. BULK ACTION BAR
+   ========================================= */
+.bulk-action-bar {
+    position: fixed;
+    bottom: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(20, 20, 20, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50px;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    transition: bottom 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 1000;
+}
+
+.bulk-action-bar.active {
+    bottom: 24px;
+}
+
+.bulk-action-bar .selection-info {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    padding-right: 16px;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.bulk-action-bar .bulk-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-bulk {
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+}
+
+.btn-bulk:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.btn-bulk.primary {
+    background: rgba(96, 165, 250, 0.1);
+    color: #60a5fa;
+    border: 1px solid rgba(96, 165, 250, 0.2);
+}
+
+.btn-bulk.primary:hover {
+    background: rgba(96, 165, 250, 0.2);
+}
+
+.btn-bulk.danger {
+    color: #ef4444;
+}
+
+.btn-bulk.danger:hover {
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.btn-bulk-text {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+.btn-bulk-text:hover {
+    color: var(--text-primary);
+}
+
 /* --- Light Theme Overrides for Login Screen --- */
 .light-theme .auth-subtitle {
     color: #4b5563 !important;

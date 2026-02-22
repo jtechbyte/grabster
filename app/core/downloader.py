@@ -265,11 +265,12 @@ class DownloadManager:
             # Keep best format per resolution
             formats = []
             for res_key, items in by_resolution.items():
-                # Sort by: 1) H.264 codec (avc1) for maximum compatibility, 2) has audio, 3) filesize
+                # Sort by: 1) H.264 codec (avc1) for max compatibility, 2) mp4 extension, 3) has audio, 4) filesize
                 best = sorted(
                     items, 
                     key=lambda x: (
                         1 if x['format'].get('vcodec', '').startswith('avc') else 0,
+                        1 if x['format'].get('ext') == 'mp4' else 0,
                         x['has_audio'], 
                         x['size']
                     ), 
