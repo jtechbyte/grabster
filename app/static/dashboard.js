@@ -2551,6 +2551,11 @@ document.addEventListener('contextmenu', (e) => {
         return;
     }
 
+    // Disable context menu entirely in the Library view
+    if (currentPage === 'Library') {
+        return;
+    }
+
     e.preventDefault();
     const jobId = card.dataset.id;
     ctxTargetId = jobId;
