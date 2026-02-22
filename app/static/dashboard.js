@@ -2552,9 +2552,9 @@ document.addEventListener('contextmenu', (e) => {
     }
 
     // Disable context menu entirely in the Library view
-    if (currentPage === 'Library') {
-        return;
-    }
+    // if (currentPage === 'Library') {
+    //     return;
+    // }
 
     e.preventDefault();
     const jobId = card.dataset.id;
@@ -2623,6 +2623,18 @@ function showContextMenu(x, y) {
         ctxDeviceBtn.style.display = isCompleted ? 'flex' : 'none';
     }
 
+    // Dynamic Delete Button Text
+    const ctxDeleteBtn = document.getElementById('ctxDelete');
+    if (ctxDeleteBtn) {
+        if (currentPage === 'Library') {
+            ctxDeleteBtn.innerHTML = '<span class="material-icons" style="color:var(--accent)">bookmark_remove</span> Remove from Library';
+            ctxDeleteBtn.classList.remove('danger');
+        } else {
+            ctxDeleteBtn.innerHTML = '<span class="material-icons">delete</span> Delete';
+            ctxDeleteBtn.classList.add('danger');
+        }
+    }
+
     // Adjust position to prevent overflow
     // We need visibility to measure, so remove hidden first but keep opacity 0 via CSS class if needed, 
     // or just calc with generic dims. 
@@ -2661,7 +2673,11 @@ document.getElementById('ctxDelete')?.addEventListener('click', () => {
     if (window.selectedJobs.length > 0) {
         window.bulkDeleteVideos(window.selectedJobs);
     } else if (ctxTargetId) {
-        window.deleteVideo(ctxTargetId, currentPage.toLowerCase());
+        if (currentPage === 'Library') {
+            window.deleteVideo(ctxTargetId, 'library');
+        } else {
+            window.deleteVideo(ctxTargetId, currentPage.toLowerCase());
+        }
     }
     closeContextMenu();
 });
