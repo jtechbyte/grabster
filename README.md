@@ -23,11 +23,11 @@
 
 | Login | Dashboard |
 |-------|-----------|
-| ![Login page](docs/screenshots/login.png) | ![Dashboard](docs/screenshots/dashboard.png) |
+| ![Login page](docs/screenshots/login.png?v=2) | ![Dashboard](docs/screenshots/dashboard.png?v=2) |
 
 | Video Fetcher | My Library |
 |--------------|------------|
-| ![Video fetcher](docs/screenshots/fetcher.png) | ![Library](docs/screenshots/library.png) |
+| ![Video fetcher](docs/screenshots/fetcher.png?v=2) | ![Library](docs/screenshots/library.png?v=2) |
 
 ---
 
