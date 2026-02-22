@@ -2367,8 +2367,12 @@ function updateBulkBar() {
         // Ensure buttons are visible
         const moveBtn = document.getElementById('btnBulkMove');
         if (moveBtn) {
-            moveBtn.innerHTML = `<span class="material-icons">bookmark_add</span> Move ${count} to Library`;
-            moveBtn.style.display = 'inline-flex';
+            if (currentPage === 'Library') {
+                moveBtn.style.display = 'none';
+            } else {
+                moveBtn.innerHTML = `<span class="material-icons">bookmark_add</span> Move ${count} to Library`;
+                moveBtn.style.display = 'inline-flex';
+            }
         }
     } else {
         bar.classList.remove('active');
