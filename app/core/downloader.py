@@ -242,10 +242,12 @@ class DownloadManager:
                 # YouTube only provides 1440p and 4K in VP9/AV1 formats (often webm).
                 if f.get("vcodec") != "none":
                     height = f.get("height")
-                    if not height:
+                    width = f.get("width")
+                    if not height or not width:
                         continue
                     
-                    res_key = f"{height}p"
+                    effective_res = min(height, width)
+                    res_key = f"{effective_res}p"
                     size = f.get("filesize") or f.get("filesize_approx") or 0
                     has_audio = f.get("acodec") != "none"
                     
